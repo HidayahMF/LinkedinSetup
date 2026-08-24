@@ -3,6 +3,8 @@ export function createAutomationProvider() {
   return {
     name: 'test-stub',
     async execute(input) {
+      // Phase D-09: expose exactly what the executor handed to the provider.
+      globalThis.__lastExecutorInput = { actionType: input.actionType, payload: input.payload }
       const mode = globalThis.__stubMode ?? 'success'
       if (mode === 'challenge') {
         return { outcome: 'challenge', message: 'LinkedIn requires additional verification.' }

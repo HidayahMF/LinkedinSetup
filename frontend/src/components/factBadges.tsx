@@ -1,10 +1,10 @@
 import type { FactStatus, FactType } from '../types/profileFact'
 
 const STATUS_COLORS: Record<FactStatus, string> = {
-  verified: 'bg-emerald-900 text-emerald-200',
-  needs_confirmation: 'bg-amber-900 text-amber-200',
-  unknown: 'bg-slate-800 text-slate-300',
-  do_not_use: 'bg-rose-900 text-rose-200',
+  verified: 'border border-green-200 bg-green-50 text-green-700',
+  needs_confirmation: 'border border-amber-200 bg-amber-50 text-amber-700',
+  unknown: 'border border-[var(--color-border)] text-[var(--color-text-secondary)]',
+  do_not_use: 'border border-red-200 bg-red-50 text-red-700',
 }
 
 const TYPE_LABELS: Record<FactType, string> = {
@@ -17,7 +17,10 @@ const TYPE_LABELS: Record<FactType, string> = {
 
 export function StatusBadge({ status }: { status: FactStatus }) {
   return (
-    <span className={`rounded px-2 py-0.5 font-mono text-xs ${STATUS_COLORS[status]}`}>
+    <span
+      className={`inline-block px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${STATUS_COLORS[status]}`}
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
       {status}
     </span>
   )
@@ -25,12 +28,14 @@ export function StatusBadge({ status }: { status: FactStatus }) {
 
 export function TypeBadge({ type }: { type: FactType }) {
   return (
-    <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-sky-300">
+    <span
+      className="inline-block border border-[var(--color-border)] px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-[var(--color-accent)]"
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
       {TYPE_LABELS[type]}
       {type === 'generated_positioning' && (
         <span title="Cannot become a verified fact without explicit user confirmation">
-          {' '}
-          ⚠
+          {' '}⚠
         </span>
       )}
     </span>

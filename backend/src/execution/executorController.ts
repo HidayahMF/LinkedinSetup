@@ -349,7 +349,12 @@ async function finishExecution(
   return { action, checklist, executed: true }
 }
 
-function verifyOutcome(action: LinkedInActionDocument, observedAfter: unknown): boolean {
+/**
+ * Compares the observed post-execution state with the approved payload.
+ * Exported for regression tests (Phase D-13) — the controller remains the only
+ * production caller. Any mismatch means UNVERIFIED, never SUCCESS (flow.md §56).
+ */
+export function verifyOutcome(action: LinkedInActionDocument, observedAfter: unknown): boolean {
   const payload = action.payload as Record<string, unknown>
   const textFields: Record<string, keyof typeof payload> = {
     update_headline: 'headline',

@@ -51,7 +51,7 @@ describe('ProfileFactsPage', () => {
     mocked.create.mockResolvedValue({ fact: factA })
     render(<ProfileFactsPage />)
 
-    await screen.findByText(/add verified profile fact/i)
+    await screen.findByText(/\$ add-fact/)
     await user.type(screen.getByLabelText('key'), 'Role')
     await user.type(screen.getByLabelText('value'), 'Junior Developer Intern')
     await user.click(screen.getByRole('button', { name: /add fact/i }))
@@ -60,7 +60,7 @@ describe('ProfileFactsPage', () => {
       expect.objectContaining({ key: 'Role', value: 'Junior Developer Intern' }),
     )
     expect(mocked.list).toHaveBeenCalledTimes(2)
-    expect(await screen.findByText('Facts (1)')).toBeTruthy()
+    expect(await screen.findByText(/\$ list-facts \(1\)/)).toBeTruthy()
   })
 
   it('shows validation errors returned by the API without clearing the form state', async () => {
@@ -71,7 +71,7 @@ describe('ProfileFactsPage', () => {
     )
     render(<ProfileFactsPage />)
 
-    await screen.findByText(/add verified profile fact/i)
+    await screen.findByText(/\$ add-fact/)
     await user.click(screen.getByRole('button', { name: /add fact/i }))
     const alert = await screen.findByRole('alert')
     expect(alert.textContent).toContain('cannot be stored as verified')
@@ -90,6 +90,6 @@ describe('ProfileFactsPage', () => {
     await screen.findByText('TypeScript')
     await user.click(screen.getByRole('button', { name: 'delete' }))
     expect(mocked.remove).toHaveBeenCalledWith(factA.id)
-    expect(await screen.findByText('Facts (0)')).toBeTruthy()
+    expect(await screen.findByText(/\$ list-facts \(0\)/)).toBeTruthy()
   })
 })

@@ -23,6 +23,9 @@ export type AuditActionType =
   | 'post.publish_confirmed'
   | 'review.generated'
   | 'agent.command'
+  | 'auth.registered'
+  | 'auth.login'
+  | 'auth.logout'
 
 export interface AuditEventDocument extends mongoose.Document {
   userId: mongoose.Types.ObjectId

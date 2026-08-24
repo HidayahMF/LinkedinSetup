@@ -11,15 +11,28 @@ import { agentRouter } from './routes/agent.js'
 import { logsRouter } from './routes/logs.js'
 import { reviewsRouter } from './routes/reviews.js'
 import { requireAuthenticatedUser } from './security/authContext.js'
+import { authRouter } from './routes/auth.js'
+import { securityHeaders } from './security/securityHeaders.js'
+import { corsAllowlist } from './security/cors.js'
 import { errorHandler, notFoundHandler } from './middleware/errors.js'
 
 export function createApp(): express.Express {
   const app = express()
 
   app.disable('x-powered-by')
+  app.set('trust proxy', false)
+  app.use(securityHeaders)
   app.use(express.json({ limit: '1mb' }))
 
   app.use('/health', healthRouter)
+
+  // CORS allowlist applies to the whole /api surface (auth + protected routes).
+  // Requests without an Origin header (curl, tests, Vite dev proxy) pass through.
+  app.use('/api', corsAllowlist)
+
+  // Public authentication endpoints (register/login). /me and /logout apply
+  // their own session verification inside the router.
+  app.use('/api/auth', authRouter)
 
   const api = express.Router()
   api.use('/profile-facts', profileFactsRouter)

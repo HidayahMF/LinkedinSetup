@@ -65,11 +65,12 @@ export default function QueuePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-center gap-3">
+    <div className="space-y-10">
+      <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold">Action Queue</h2>
-          <p className="text-sm text-slate-500">
+          <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ queue</p>
+          <h1 className="text-2xl font-bold tracking-tight">Action Queue</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             Executor only takes APPROVED items. Every run passes a 21-check contract and is audited.
           </p>
         </div>
@@ -78,54 +79,58 @@ export default function QueuePage() {
             run(() => actionsService.runQueue(), 'Queue run finished. Unverified results halt the queue for review.')
           }
           disabled={busy}
-          className="ml-auto rounded bg-sky-600 px-4 py-1.5 text-sm font-medium hover:bg-sky-500 disabled:opacity-50"
+          className="border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
         >
           Run approved queue
         </button>
       </header>
 
+      <hr className="border-[var(--color-border)]" />
+
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
       {notice && (
-        <p className="rounded border border-slate-700 bg-slate-900/80 p-3 text-sm text-slate-300">{notice}</p>
+        <p className="border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-sm text-[var(--color-text-secondary)]">{notice}</p>
       )}
 
-      <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ items ({actions.length})</p>
         {actions.length === 0 ? (
-          <p className="text-sm text-slate-500">Queue is empty.</p>
+          <p className="mt-4 text-sm text-[var(--color-text-muted)]">Queue is empty.</p>
         ) : (
-          <ul className="divide-y divide-slate-800">
+          <ul className="mt-4 divide-y divide-[var(--color-border)]">
             {actions.map((action) => (
-              <li key={action.id} className="py-2 text-sm">
+              <li key={action.id} className="py-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="w-8 font-mono text-xs text-slate-600">#{action.queueOrder}</span>
+                  <span className="w-8 text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>#{action.queueOrder}</span>
                   <RiskBadge level={action.riskLevel} />
                   <span
-                    className={`rounded px-2 py-0.5 font-mono text-xs uppercase ${
+                    className={`border px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${
                       action.status === 'completed'
-                        ? 'bg-emerald-800 text-emerald-100'
+                        ? 'border-green-200 bg-green-50 text-green-700'
                         : action.status === 'failed'
-                          ? 'bg-rose-900 text-rose-200'
+                          ? 'border-red-200 bg-red-50 text-red-700'
                           : action.status === 'unverified'
-                            ? 'bg-yellow-800 text-yellow-100'
-                            : 'bg-slate-800 text-slate-300'
+                            ? 'border-yellow-200 bg-yellow-50 text-yellow-700'
+                            : 'border-[var(--color-border)] text-[var(--color-text-secondary)]'
                     }`}
+                    style={{ fontFamily: 'var(--font-mono)' }}
                   >
                     {action.status}
                   </span>
-                  <span className="font-mono text-xs text-sky-300">{action.actionType}</span>
-                  <span className="text-slate-400">{action.summary}</span>
-                  <span className="font-mono text-[10px] text-slate-600">#{action.contentHash.slice(0, 10)}</span>
+                  <span className="text-[10px] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-mono)' }}>{action.actionType}</span>
+                  <span className="text-[var(--color-text-secondary)]">{action.summary}</span>
+                  <span className="text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>#{action.contentHash.slice(0, 10)}</span>
 
-                  <div className="ml-auto flex gap-1">
+                  <div className="ml-auto flex gap-2">
                     {['approved', 'paused'].includes(action.status) && (
                       <button
                         onClick={() => execute(action.id)}
                         disabled={busy}
-                        className="rounded bg-emerald-700 px-3 py-0.5 text-xs hover:bg-emerald-600 disabled:opacity-40"
+                        className="border border-green-600 bg-green-600 px-3 py-0.5 text-xs text-white hover:bg-green-700 disabled:opacity-40"
                       >
                         execute
                       </button>
@@ -133,7 +138,7 @@ export default function QueuePage() {
                     {['failed', 'unverified', 'paused'].includes(action.status) && (
                       <button
                         onClick={() => run(() => actionsService.retry(action.id), 'Re-queued for execution')}
-                        className="text-xs text-emerald-300 hover:underline"
+                        className="text-xs text-[var(--color-accent)] hover:underline"
                       >
                         retry
                       </button>
@@ -141,7 +146,7 @@ export default function QueuePage() {
                     {['approved', 'paused'].includes(action.status) && (
                       <button
                         onClick={() => run(() => actionsService.skip(action.id), 'Action skipped')}
-                        className="text-xs text-slate-400 hover:underline"
+                        className="text-xs text-[var(--color-text-muted)] hover:underline"
                       >
                         skip
                       </button>
@@ -149,7 +154,7 @@ export default function QueuePage() {
                     {['approved', 'paused', 'unverified'].includes(action.status) && (
                       <button
                         onClick={() => run(() => actionsService.cancel(action.id), 'Action cancelled')}
-                        className="text-xs text-rose-400 hover:underline"
+                        className="text-xs text-red-500 hover:underline"
                       >
                         cancel
                       </button>
@@ -157,7 +162,7 @@ export default function QueuePage() {
                   </div>
                 </div>
                 {action.lastError && (
-                  <p className="mt-1 pl-12 text-xs text-rose-300">{action.lastError}</p>
+                  <p className="mt-1 pl-12 text-xs text-red-600">{action.lastError}</p>
                 )}
               </li>
             ))}
@@ -166,11 +171,11 @@ export default function QueuePage() {
       </section>
 
       {checklist && (
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="mb-2 font-semibold">Final Execution Contract — last run</h3>
+        <section>
+          <p className="mb-3 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ contract-check (last run)</p>
           <ul className="grid gap-x-6 gap-y-0.5 text-xs sm:grid-cols-2">
             {checklist.checks.map((c, i) => (
-              <li key={i} className={c.passed ? 'text-emerald-400' : 'text-rose-300'}>
+              <li key={i} className={c.passed ? 'text-green-600' : 'text-red-600'} style={{ fontFamily: 'var(--font-mono)' }}>
                 {String(c.id).padStart(2, '0')} {c.name} {c.passed ? '✓' : `✗ ${c.detail ?? ''}`}
               </li>
             ))}

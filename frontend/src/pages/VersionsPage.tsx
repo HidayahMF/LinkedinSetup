@@ -48,36 +48,42 @@ export default function VersionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <header>
-        <h2 className="text-xl font-bold">Versions</h2>
-        <p className="text-sm text-slate-500">
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ versions</p>
+        <h1 className="text-2xl font-bold tracking-tight">Versions</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Append-only history (flow.md §39). Rollback creates a new version; history is never
           destroyed.
         </p>
       </header>
 
+      <hr className="border-[var(--color-border)]" />
+
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
-      {notice && <p className="text-sm text-emerald-400">{notice}</p>}
+      {notice && <p className="text-sm text-green-600">{notice}</p>}
 
-      <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ log ({versions.length} versions)</p>
         {versions.length === 0 ? (
-          <p className="text-sm text-slate-500">No versions yet — save the profile once.</p>
+          <p className="mt-4 text-sm text-[var(--color-text-muted)]">No versions yet — save the profile once.</p>
         ) : (
-          <ul className="divide-y divide-slate-800">
+          <ul className="mt-4 divide-y divide-[var(--color-border)]">
             {versions.map((v) => (
-              <li key={v.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
-                <span className="w-10 font-mono text-slate-500">v{v.versionNumber}</span>
-                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-sky-300">{v.source}</span>
-                <span className="flex-1 truncate text-slate-300">{v.label}</span>
-                <span className="font-mono text-xs text-slate-600">
+              <li key={v.id} className="flex flex-wrap items-center gap-3 py-3 text-sm">
+                <span className="w-10 text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>v{v.versionNumber}</span>
+                <span className="border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-1.5 py-0.5 text-[10px] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  {v.source}
+                </span>
+                <span className="flex-1 truncate text-[var(--color-text-secondary)]">{v.label}</span>
+                <span className="text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>
                   {new Date(v.createdAt).toLocaleString()}
                 </span>
-                <label className="flex items-center gap-1 text-xs text-slate-400">
+                <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
                   from
                   <input
                     type="radio"
@@ -89,7 +95,7 @@ export default function VersionsPage() {
                     }}
                   />
                 </label>
-                <label className="flex items-center gap-1 text-xs text-slate-400">
+                <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
                   to
                   <input
                     type="radio"
@@ -101,7 +107,7 @@ export default function VersionsPage() {
                     }}
                   />
                 </label>
-                <button onClick={() => restore(v.id)} className="text-xs text-amber-300 hover:underline">
+                <button onClick={() => restore(v.id)} className="text-xs text-amber-600 hover:underline">
                   restore
                 </button>
               </li>
@@ -112,7 +118,7 @@ export default function VersionsPage() {
 
       {diff && (
         <section>
-          <h3 className="mb-2 font-semibold">Diff</h3>
+          <p className="mb-2 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ diff</p>
           <DiffView changes={diff.changes} />
         </section>
       )}

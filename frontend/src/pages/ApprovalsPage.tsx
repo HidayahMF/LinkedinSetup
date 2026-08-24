@@ -61,25 +61,28 @@ export default function ApprovalsPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <header>
-        <h2 className="text-xl font-bold">Approvals</h2>
-        <p className="text-sm text-slate-500">
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ approvals</p>
+        <h1 className="text-2xl font-bold tracking-tight">Approvals</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Approve all, single actions, or exclude specific ones (flow.md §44/§47). Approval binds to
           the exact content hash and expires.
         </p>
       </header>
 
+      <hr className="border-[var(--color-border)]" />
+
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
-      {notice && <p className="text-sm text-emerald-400">{notice}</p>}
+      {notice && <p className="text-sm text-green-600">{notice}</p>}
 
-      {pending.length === 0 && <p className="text-slate-500">Nothing waiting for approval.</p>}
+      {pending.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">Nothing waiting for approval.</p>}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {pending.map((proposal) => (
           <PendingProposalCard
             key={proposal.id}
@@ -101,14 +104,14 @@ export default function ApprovalsPage() {
       </div>
 
       {decided.length > 0 && (
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="mb-2 font-semibold">History</h3>
-          <ul className="space-y-1 text-sm text-slate-400">
+        <section>
+          <p className="mb-3 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ history</p>
+          <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
             {decided.slice(0, 15).map((p) => (
               <li key={p.id} className="flex items-center gap-2 text-xs">
-                <span className="font-mono uppercase">{p.state}</span>
+                <span className="uppercase text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>{p.state}</span>
                 <span>{p.title}</span>
-                <span className="ml-auto font-mono text-slate-600">{p.contentHash.slice(0, 12)}…</span>
+                <span className="ml-auto text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>{p.contentHash.slice(0, 12)}…</span>
               </li>
             ))}
           </ul>
@@ -139,19 +142,19 @@ function PendingProposalCard({
   const ready = fv?.isReady ?? false
 
   return (
-    <article className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <h3 className="font-semibold">{proposal.title}</h3>
-        <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-slate-300">
+    <article className="border border-[var(--color-border)] p-4">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h3 className="font-semibold text-[var(--color-text)]">{proposal.title}</h3>
+        <span className="border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-mono)' }}>
           v{proposal.proposalVersion}
         </span>
         <RiskBadge level={proposal.plannedActions[0]?.riskLevel ?? 'low'} />
         {!ready && (
-          <span className="rounded bg-amber-900 px-2 py-0.5 text-xs text-amber-200">
+          <span className="border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700">
             NOT READY — unresolved claims block approval
           </span>
         )}
-        <span className="ml-auto font-mono text-xs text-slate-600">
+        <span className="ml-auto text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>
           expires {new Date(proposal.expiresAt).toLocaleString()}
         </span>
       </div>
@@ -159,7 +162,7 @@ function PendingProposalCard({
       <DiffView changes={proposal.changes.map((c) => ({ field: c.field, before: c.before, after: c.after }))} />
 
       {fv && !fv.isReady && (
-        <ul className="mt-2 space-y-1 rounded border border-amber-900 bg-amber-950/40 p-2 text-xs text-amber-200">
+        <ul className="mt-3 space-y-1 border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
           {fv.claims
             ?.filter((c) => c.status !== 'supported')
             .map((c, i) => (
@@ -180,20 +183,20 @@ function PendingProposalCard({
               onChange={(e) => setSelected({ ...selected, [action.actionId]: e.target.checked })}
             />
             <RiskBadge level={action.riskLevel} />
-            <span className="font-mono text-xs text-sky-300">{action.actionType}</span>
-            <span className="text-slate-400">{action.summary}</span>
+            <span className="text-[10px] text-[var(--color-accent)]" style={{ fontFamily: 'var(--font-mono)' }}>{action.actionType}</span>
+            <span className="text-[var(--color-text-secondary)]">{action.summary}</span>
           </li>
         ))}
       </ul>
 
       {proposal.changes.length > 0 && (
-        <div className="mt-2">
+        <div className="mt-3">
           {editingField !== null ? (
             <div className="space-y-1">
               <textarea
                 rows={4}
                 aria-label="edit after content"
-                className="w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none"
+                className="w-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-sm focus:border-green-500 focus:outline-none"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
               />
@@ -203,11 +206,11 @@ function PendingProposalCard({
                     onEdit(editingField, editValue)
                     setEditingField(null)
                   }}
-                  className="rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600"
+                  className="border border-green-600 bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
                 >
                   Save as new version
                 </button>
-                <button onClick={() => setEditingField(null)} className="text-sm text-slate-400 hover:underline">
+                <button onClick={() => setEditingField(null)} className="text-sm text-[var(--color-text-muted)] hover:underline">
                   cancel
                 </button>
               </div>
@@ -219,7 +222,7 @@ function PendingProposalCard({
                   setEditingField(String(proposal.changes[0].field))
                   setEditValue(String(proposal.changes[0].after))
                 }}
-                className="mt-2 text-xs text-sky-400 hover:underline"
+                className="mt-2 text-xs text-[var(--color-accent)] hover:underline"
               >
                 edit BEFORE approving → creates a new version
               </button>
@@ -232,11 +235,11 @@ function PendingProposalCard({
         <button
           disabled={!ready}
           onClick={() => onApprove(Object.keys(selected).filter((k) => selected[k]))}
-          className="rounded bg-emerald-700 px-4 py-1 text-sm font-medium hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="border border-green-600 bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Approve selected
         </button>
-        <button onClick={onReject} className="rounded bg-rose-800 px-4 py-1 text-sm hover:bg-rose-700">
+        <button onClick={onReject} className="border border-[var(--color-border)] px-4 py-1.5 text-sm text-[var(--color-text-secondary)] hover:border-red-300 hover:text-red-600">
           Reject
         </button>
       </div>

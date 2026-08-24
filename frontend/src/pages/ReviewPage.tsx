@@ -3,6 +3,7 @@ import { profileService } from '../services/profile'
 import { reviewsService } from '../services/workflow'
 import type { ReviewResponse } from '../services/profile'
 import { PROFILE_SECTIONS } from '../types/profile'
+
 export default function ReviewPage() {
   const [target, setTarget] = useState<'profile' | string>('profile')
   const [review, setReview] = useState<ReviewResponse | null>(null)
@@ -38,82 +39,87 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-10">
       <header>
-        <h2 className="text-xl font-bold">AI Review</h2>
-        <p className="text-sm text-slate-500">
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ review</p>
+        <h1 className="text-2xl font-bold tracking-tight">AI Review</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Read-only analysis. Scores are an AI evaluation, never objective fact (flow.md §31).
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+      <hr className="border-[var(--color-border)]" />
+
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-3">
         <select
           aria-label="review target"
           value={target}
           onChange={(e) => setTarget(e.target.value)}
-          className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm"
+          className="border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-sm"
         >
           <option value="profile">Whole profile</option>
           {PROFILE_SECTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
         <button
           onClick={run}
           disabled={busy}
-          className="rounded bg-sky-600 px-4 py-1 text-sm font-medium hover:bg-sky-500 disabled:opacity-50"
+          className="border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
         >
           {busy ? 'Analyzing…' : 'Run review'}
         </button>
       </div>
 
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
 
       {review && (
-        <section className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="space-y-6">
+          {/* Scores */}
           <div>
-            <h3 className="font-semibold">Scores</h3>
-            <ul className="mt-2 space-y-1 text-sm">
+            <p className="mb-3 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ scores</p>
+            <ul className="space-y-2 text-sm">
               {Object.entries(review.scores).map(([k, v]) => (
-                <li key={k} className="flex items-center gap-2">
-                  <span className="w-32 text-slate-400">{k}</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded bg-slate-800">
+                <li key={k} className="flex items-center gap-3">
+                  <span className="w-36 text-[var(--color-text-secondary)]">{k}</span>
+                  <div className="h-1.5 flex-1 overflow-hidden bg-[var(--color-border)]">
                     <div
-                      className={`h-full ${v >= 70 ? 'bg-emerald-500' : v >= 40 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                      className={`h-full ${v >= 70 ? 'bg-green-500' : v >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
                       style={{ width: `${v}%` }}
                     />
                   </div>
-                  <span className="w-14 text-right font-mono text-xs">{v}/100</span>
+                  <span className="w-14 text-right text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>{v}/100</span>
                 </li>
               ))}
-              <li className="flex items-center gap-2 border-t border-slate-800 pt-1">
-                <span className="w-32 font-medium">Overall</span>
-                <span className="font-mono text-sm">{review.overall}/100</span>
+              <li className="flex items-center gap-3 border-t border-[var(--color-border)] pt-2">
+                <span className="w-36 font-medium text-[var(--color-text)]">Overall</span>
+                <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>{review.overall}/100</span>
               </li>
             </ul>
           </div>
 
-          <ReviewList title="Strengths" tone="text-emerald-300" items={review.strengths} />
-          <ReviewList title="Issues" tone="text-amber-300" items={review.issues} />
-          <ReviewList title="Unsupported claims" tone="text-rose-300" items={review.unsupportedClaims} />
-          <ReviewList title="Missing information" tone="text-sky-300" items={review.missingInformation} />
-          <ReviewList title="Recommendations" tone="text-slate-200" items={review.recommendations} />
-          <ReviewList title="Optional improvements" tone="text-slate-400" items={review.optionalImprovements} />
+          <hr className="border-[var(--color-border)]" />
+
+          <ReviewList title="Strengths" tone="text-green-600" items={review.strengths} />
+          <ReviewList title="Issues" tone="text-amber-600" items={review.issues} />
+          <ReviewList title="Unsupported claims" tone="text-red-600" items={review.unsupportedClaims} />
+          <ReviewList title="Missing information" tone="text-[var(--color-accent)]" items={review.missingInformation} />
+          <ReviewList title="Recommendations" tone="text-[var(--color-text)]" items={review.recommendations} />
+          <ReviewList title="Optional improvements" tone="text-[var(--color-text-muted)]" items={review.optionalImprovements} />
         </section>
       )}
 
       {history.length > 0 && (
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="mb-2 font-semibold">Past reviews</h3>
-          <ul className="space-y-1 text-sm text-slate-400">
+        <section>
+          <p className="mb-3 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ history</p>
+          <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
             {history.slice(0, 10).map((h) => (
-              <li key={h.id} className="flex justify-between font-mono text-xs">
+              <li key={h.id} className="flex justify-between text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
                 <span>{h.target}</span>
                 <span>{h.overall}/100</span>
               </li>
@@ -129,8 +135,8 @@ function ReviewList({ title, items, tone }: { title: string; items: string[]; to
   if (!items.length) return null
   return (
     <div>
-      <h4 className={`text-xs font-semibold uppercase tracking-wide ${tone}`}>{title}</h4>
-      <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-300">
+      <h4 className={`text-xs font-semibold uppercase tracking-wider ${tone}`} style={{ fontFamily: 'var(--font-mono)' }}>{title}</h4>
+      <ul className="mt-2 list-inside list-disc space-y-0.5 text-sm text-[var(--color-text-secondary)]">
         {items.map((item, i) => (
           <li key={i}>{item}</li>
         ))}

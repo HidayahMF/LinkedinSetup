@@ -4,7 +4,7 @@ import type { Post } from '../types/posts'
 import type { PostState } from '../types/posts'
 
 const input =
-  'rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100 focus:border-sky-500 focus:outline-none'
+  'border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none'
 
 export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
@@ -41,22 +41,26 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <header>
-        <h2 className="text-xl font-bold">Posts</h2>
-        <p className="text-sm text-slate-500">
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ posts</p>
+        <h1 className="text-2xl font-bold tracking-tight">Posts</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Lifecycle: draft → AI fact review → final draft → approval → publish confirmation →
           published. Nothing is public without explicit confirmation.
         </p>
       </header>
 
-      <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-        <h3 className="mb-2 font-semibold">New draft</h3>
+      <hr className="border-[var(--color-border)]" />
+
+      {/* New draft */}
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ new-draft</p>
         <textarea
           aria-label="post text"
           rows={3}
           placeholder="Write your post — only facts you can verify. Metrics without a source will be flagged."
-          className={`${input} w-full`}
+          className={`${input} mt-4 w-full`}
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
         />
@@ -66,35 +70,39 @@ export default function PostsPage() {
             setNewText('')
           }, 'Draft created')}
           disabled={!newText.trim()}
-          className="mt-2 rounded bg-sky-600 px-4 py-1 text-sm hover:bg-sky-500 disabled:opacity-50"
+          className="mt-2 border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
         >
           Create draft
         </button>
       </section>
 
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
-      {notice && <p className="text-sm text-emerald-400">{notice}</p>}
+      {notice && <p className="text-sm text-green-600">{notice}</p>}
 
-      <div className="space-y-4">
-        {posts.length === 0 && <p className="text-slate-500">No posts yet.</p>}
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onRun={run}
-            editingId={editingId}
-            setEditingId={setEditingId}
-            editText={editText}
-            setEditText={setEditText}
-            confirmingId={confirmingId}
-            setConfirmingId={setConfirmingId}
-          />
-        ))}
-      </div>
+      {/* Posts list */}
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ list ({posts.length})</p>
+        <div className="mt-4 space-y-4">
+          {posts.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">No posts yet.</p>}
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onRun={run}
+              editingId={editingId}
+              setEditingId={setEditingId}
+              editText={editText}
+              setEditText={setEditText}
+              confirmingId={confirmingId}
+              setConfirmingId={setConfirmingId}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
@@ -111,11 +119,11 @@ interface PostCardProps {
 }
 
 const STATE_TONE: Partial<Record<PostState, string>> = {
-  published: 'text-emerald-400',
-  unverified: 'text-yellow-300',
-  blocked_fact_check: 'text-rose-300',
-  waiting_approval: 'text-amber-300',
-  publish_confirmed: 'text-amber-200',
+  published: 'text-green-600',
+  unverified: 'text-yellow-600',
+  blocked_fact_check: 'text-red-600',
+  waiting_approval: 'text-amber-600',
+  publish_confirmed: 'text-amber-600',
 }
 
 function PostCard({
@@ -131,19 +139,22 @@ function PostCard({
   const fv = post.factValidation
 
   return (
-    <article className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+    <article className="border border-[var(--color-border)] p-4">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <span className={`font-mono uppercase ${STATE_TONE[post.state] ?? 'text-slate-300'}`}>
+        <span
+          className={`uppercase tracking-wider ${STATE_TONE[post.state] ?? 'text-[var(--color-text-secondary)]'}`}
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
           {post.state}
         </span>
-        <span className="text-slate-500">v{post.versionTag}</span>
+        <span className="text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>v{post.versionTag}</span>
         {fv && (
-          <span className={fv.isReady ? 'text-emerald-400' : 'text-amber-300'}>
+          <span className={fv.isReady ? 'text-green-600' : 'text-amber-600'}>
             fact check: {fv.supportedCount}✓ {fv.unsupportedCount}✗ {fv.needsConfirmationCount}?
           </span>
         )}
         {post.verificationResult && (
-          <span className="font-mono text-slate-500">result: {post.verificationResult}</span>
+          <span className="text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>result: {post.verificationResult}</span>
         )}
       </div>
 
@@ -164,21 +175,21 @@ function PostCard({
                   setEditingId(null)
                 }, 'Draft updated as a new version')
               }
-              className="rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600"
+              className="border border-green-600 bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
             >
               Save edit
             </button>
-            <button onClick={() => setEditingId(null)} className="text-sm text-slate-400 hover:underline">
+            <button onClick={() => setEditingId(null)} className="text-sm text-[var(--color-text-muted)] hover:underline">
               cancel
             </button>
           </div>
         </>
       ) : (
-        <p className="whitespace-pre-wrap text-sm text-slate-100">{post.text}</p>
+        <p className="whitespace-pre-wrap text-sm text-[var(--color-text)]">{post.text}</p>
       )}
 
       {fv?.claims?.some((c) => c.status !== 'supported') && (
-        <ul className="mt-2 space-y-1 rounded border border-slate-800 p-2 text-xs text-amber-300">
+        <ul className="mt-2 space-y-1 border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
           {fv.claims
             .filter((c) => c.status !== 'supported')
             .map((c, i) => (
@@ -192,7 +203,7 @@ function PostCard({
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => onRun(() => postsService.review(post.id), 'Fact review complete')}
-          className="rounded bg-sky-700 px-3 py-1 text-xs hover:bg-sky-600"
+          className="border border-[var(--color-accent)] px-3 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white"
         >
           Run fact check
         </button>
@@ -202,7 +213,7 @@ function PostCard({
               setEditingId(post.id)
               setEditText(post.text)
             }}
-            className="text-xs text-sky-400 hover:underline"
+            className="text-xs text-[var(--color-accent)] hover:underline"
           >
             edit (new version)
           </button>
@@ -210,28 +221,28 @@ function PostCard({
         {post.state === 'final_draft' && !post.publishProposalId && (
           <button
             onClick={() => onRun(() => postsService.requestPublish(post.id), 'Publish proposal created — approve it in Approvals')}
-            className="rounded bg-amber-700 px-3 py-1 text-xs hover:bg-amber-600"
+            className="border border-amber-600 bg-amber-600 px-3 py-1 text-xs text-white hover:bg-amber-700"
           >
             Publish request
           </button>
         )}
         {(post.state === 'approved' || post.state === 'waiting_approval') && post.publishProposalId && (
-          <a href="#approvals" className="text-xs text-amber-300 underline">
+          <span className="text-xs text-amber-600">
             awaiting approval → open Approvals
-          </a>
+          </span>
         )}
         {post.publishProposalId && ['waiting_approval', 'approved'].includes(post.state) && (
           <button
             onClick={() => setConfirmingId(confirmingId === post.id ? null : post.id)}
-            className="rounded bg-rose-900 px-3 py-1 text-xs hover:bg-rose-800"
+            className="border border-red-300 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
           >
             Publish confirmation…
           </button>
         )}
         {confirmingId === post.id && (
-          <div className="mt-2 w-full rounded border border-rose-800 bg-rose-950/60 p-3 text-sm">
-            <p className="font-medium text-rose-200">This post will be published publicly.</p>
-            <pre className="my-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-slate-950/80 p-2 text-xs text-slate-300">
+          <div className="mt-2 w-full border border-red-200 bg-red-50 p-3 text-sm">
+            <p className="font-medium text-red-700">This post will be published publicly.</p>
+            <pre className="my-2 max-h-40 overflow-auto whitespace-pre-wrap border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-xs text-[var(--color-text-secondary)]">
               {post.finalText ?? post.text}
             </pre>
             <div className="flex gap-2">
@@ -242,20 +253,20 @@ function PostCard({
                     setConfirmingId(null)
                   }, 'Publish confirmed — execute it from the Action Queue')
                 }
-                className="rounded bg-rose-700 px-4 py-1 text-sm font-semibold text-white hover:bg-rose-600"
+                className="border border-red-600 bg-red-600 px-4 py-1 text-sm font-semibold text-white hover:bg-red-700"
               >
                 Publish
               </button>
-              <button onClick={() => setConfirmingId(null)} className="text-sm text-slate-300 hover:underline">
+              <button onClick={() => setConfirmingId(null)} className="text-sm text-[var(--color-text-secondary)] hover:underline">
                 Cancel
               </button>
             </div>
           </div>
         )}
         {post.state === 'publish_confirmed' && (
-          <a href="#queue" className="text-xs text-emerald-300 underline">
+          <span className="text-xs text-green-600">
             ready → execute from Action Queue
-          </a>
+          </span>
         )}
       </div>
     </article>

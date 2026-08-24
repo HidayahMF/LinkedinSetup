@@ -17,8 +17,45 @@ let mongo: MongoMemoryServer
 let server: Server
 let baseUrl: string
 
-const userA = '5f1f7a4c9d3e2b1a0c8d7e6a'
-const userB = '5f1f7a4c9d3e2b1a0c8d7e6b'
+/**
+ * Real authentication (flow.md §62/§71): identities come from registered accounts,
+ * and every request carries a verified Bearer session token. The legacy x-user-id
+ * header no longer exists — these constants hold server-assigned account ids that
+ * are resolved to live session tokens by the call() helper below.
+ */
+let userA = ''
+let userB = ''
+
+/** Lazily registered accounts keyed by user id → bearer token. */
+const tokens = new Map<string, string>()
+
+async function ensureAuthenticatedAccount(
+  tag: string,
+  assignTo: (id: string) => void,
+): Promise<void> {
+  const res = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: `${tag}@invariants.test`, password: 'security-invariant-pass' }),
+  })
+  if (res.status !== 201) {
+    // Already registered in a previous run against the same in-memory db — log in instead.
+    const login = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: `${tag}@invariants.test`, password: 'security-invariant-pass' }),
+    })
+    if (login.status !== 200) {
+      throw new Error(`could not authenticate test account ${tag}: ${login.status}`)
+    }
+    const payload = (await login.json()) as { user: { id: string }; token: string }
+    tokens.set(payload.user.id, payload.token)
+    return
+  }
+  const payload = (await res.json()) as { user: { id: string }; token: string }
+  tokens.set(payload.user.id, payload.token)
+  assignTo(payload.user.id)
+}
 
 declare global {
   // eslint-disable-next-line no-var
@@ -36,6 +73,8 @@ beforeAll(async () => {
       resolve()
     })
   })
+  await ensureAuthenticatedAccount('invariants-user-a', (id) => (userA = id))
+  await ensureAuthenticatedAccount('invariants-user-b', (id) => (userB = id))
 })
 
 afterAll(async () => {
@@ -66,7 +105,11 @@ async function call(
   { method = 'GET', body, user }: RequestOptions = {},
 ): Promise<{ status: number; body: any }> {
   const headers: Record<string, string> = {}
-  if (user !== undefined) headers['x-user-id'] = user
+  if (user !== undefined) {
+    const token = tokens.get(user)
+    if (!token) throw new Error(`no live session token for test user ${user}`)
+    headers['authorization'] = `Bearer ${token}`
+  }
   if (body !== undefined) headers['content-type'] = 'application/json'
   const res = await fetch(`${baseUrl}${path}`, {
     method,

@@ -13,8 +13,27 @@ let mongo: MongoMemoryServer
 let server: Server
 let baseUrl: string
 
-const userA = '5f1f7a4c9d3e2b1a0c8d7e6a'
-const userB = '5f1f7a4c9d3e2b1a0c8d7e6b'
+/**
+ * Real authentication (flow.md §62/§71): accounts are registered through the auth
+ * API and every request carries a verified Bearer session token. These constants
+ * hold the server-assigned account ids resolved to tokens by call().
+ */
+let userA = ''
+let userB = ''
+
+const tokens = new Map<string, string>()
+
+async function registerAccount(tag: string, assignTo: (id: string) => void): Promise<void> {
+  const res = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: `${tag}@facts.test`, password: 'profile-facts-pass-1' }),
+  })
+  if (res.status !== 201) throw new Error(`register ${tag} failed: ${res.status}`)
+  const payload = (await res.json()) as { user: { id: string }; token: string }
+  tokens.set(payload.user.id, payload.token)
+  assignTo(payload.user.id)
+}
 
 const validCreate = {
   type: 'fact',
@@ -37,6 +56,8 @@ beforeAll(async () => {
       resolve()
     })
   })
+  await registerAccount('facts-user-a', (id) => (userA = id))
+  await registerAccount('facts-user-b', (id) => (userB = id))
 })
 
 afterAll(async () => {
@@ -54,14 +75,22 @@ interface RequestOptions {
   method?: string
   body?: unknown
   user?: string
+  /** Overrides the cached token — used to prove garbage tokens are rejected. */
+  tokenOverride?: string
 }
 
 async function call(
   path: string,
-  { method = 'GET', body, user }: RequestOptions = {},
+  { method = 'GET', body, user, tokenOverride }: RequestOptions = {},
 ): Promise<{ status: number; body: any }> {
   const headers: Record<string, string> = {}
-  if (user !== undefined) headers['x-user-id'] = user
+  if (tokenOverride !== undefined) {
+    headers['authorization'] = `Bearer ${tokenOverride}`
+  } else if (user !== undefined) {
+    const token = tokens.get(user)
+    if (!token) throw new Error(`no live session token for test user ${user}`)
+    headers['authorization'] = `Bearer ${token}`
+  }
   if (body !== undefined) headers['content-type'] = 'application/json'
   const res = await fetch(`${baseUrl}${path}`, {
     method,
@@ -178,9 +207,15 @@ describe('profile facts — authentication boundary', () => {
     expect(body.error).toBe('AUTHENTICATION_ERROR')
   })
 
-  it('rejects malformed user identity (401)', async () => {
-    const { status } = await call('/api/profile-facts', { user: 'not-an-objectid' })
-    expect(status).toBe(401)
+  it('rejects unauthenticated requests (401) — no header or session can assert identity', async () => {
+    const noAuth = await fetch(`${baseUrl}/api/profile-facts`)
+    expect(noAuth.status).toBe(401)
+    const forgedHeader = await fetch(`${baseUrl}/api/profile-facts`, {
+      headers: { 'x-user-id': 'not-an-objectid' },
+    })
+    expect(forgedHeader.status).toBe(401)
+    const garbageToken = await call('/api/profile-facts', { user: userA, tokenOverride: 'garbage' })
+    expect(garbageToken.status).toBe(401)
   })
 })
 

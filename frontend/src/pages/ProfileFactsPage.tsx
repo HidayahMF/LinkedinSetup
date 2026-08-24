@@ -14,7 +14,7 @@ import { profileFactsService } from '../services/profileFacts'
 import { StatusBadge, TypeBadge } from '../components/factBadges'
 
 const inputClass =
-  'rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100 focus:border-sky-500 focus:outline-none'
+  'border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none'
 
 export default function ProfileFactsPage() {
   const [facts, setFacts] = useState<ProfileFact[]>([])
@@ -89,13 +89,24 @@ export default function ProfileFactsPage() {
     }
   }
 
-  if (loading) return <p className="p-6 text-slate-400">Loading…</p>
+  if (loading) return <p className="text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>loading…</p>
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="mb-3 font-semibold text-slate-200">Add verified profile fact</h2>
-        <form onSubmit={handleCreate} className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="space-y-10">
+      <header>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ source-of-truth</p>
+        <h1 className="text-2xl font-bold tracking-tight">Source of Truth</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+          Verified profile facts. AI treats these as ground truth.
+        </p>
+      </header>
+
+      <hr className="border-[var(--color-border)]" />
+
+      {/* Create form */}
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ add-fact</p>
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
           <select
             aria-label="type"
             className={inputClass}
@@ -103,9 +114,7 @@ export default function ProfileFactsPage() {
             onChange={(e) => setForm({ ...form, type: e.target.value as FactType })}
           >
             {FACT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
           <select
@@ -115,15 +124,14 @@ export default function ProfileFactsPage() {
             onChange={(e) => setForm({ ...form, category: e.target.value as FactCategory })}
           >
             {FACT_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
           <input
             aria-label="key"
             placeholder="key (e.g. role, company)"
             className={inputClass}
+            style={{ fontFamily: 'var(--font-mono)' }}
             value={form.key}
             onChange={(e) => setForm({ ...form, key: e.target.value })}
           />
@@ -134,9 +142,7 @@ export default function ProfileFactsPage() {
             onChange={(e) => setForm({ ...form, status: e.target.value as FactStatus })}
           >
             {FACT_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
           <textarea
@@ -154,58 +160,57 @@ export default function ProfileFactsPage() {
             onChange={(e) => setForm({ ...form, source: e.target.value as FactSource })}
           >
             {FACT_SOURCES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
           <button
             type="submit"
-            className="rounded bg-sky-600 px-4 py-1 text-sm font-medium text-white hover:bg-sky-500"
+            className="border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)]"
           >
             Add fact
           </button>
         </form>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-[var(--color-text-muted)]">
           Non-authoritative types (inference / generated) cannot be saved as verified.
         </p>
       </section>
 
       {error && (
-        <p role="alert" className="rounded border border-rose-800 bg-rose-950 p-3 text-sm text-rose-200">
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
-      {notice && <p className="text-sm text-emerald-400">{notice}</p>}
+      {notice && <p className="text-sm text-green-600">{notice}</p>}
 
-      <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="mb-3 font-semibold text-slate-200">Facts ({facts.length})</h2>
+      {/* Facts list */}
+      <section>
+        <p className="mb-1 text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>$ list-facts ({facts.length})</p>
         {facts.length === 0 ? (
-          <p className="text-sm text-slate-500">No facts yet.</p>
+          <p className="mt-4 text-sm text-[var(--color-text-muted)]">No facts yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-800">
+          <ul className="mt-4 divide-y divide-[var(--color-border)]">
             {facts.map((fact) => (
-              <li key={fact.id} className="flex flex-wrap items-center gap-3 py-2">
+              <li key={fact.id} className="flex flex-wrap items-center gap-2 py-3">
                 <TypeBadge type={fact.type} />
                 <StatusBadge status={fact.status} />
-                <span className="font-mono text-xs text-slate-400">{fact.category}</span>
-                <span className="font-medium text-slate-200">{fact.key}</span>
+                <span className="text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-mono)' }}>{fact.category}</span>
+                <span className="text-sm font-medium text-[var(--color-text)]">{fact.key}</span>
                 {editingId === fact.id ? (
                   <>
                     <input
                       aria-label="edit value"
-                      className={inputClass}
+                      className={`${inputClass} flex-1`}
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                     />
                     <button
-                      className="text-sm text-emerald-400 hover:underline"
+                      className="text-sm text-green-600 hover:underline"
                       onClick={() => handleSaveEdit(fact.id)}
                     >
                       save
                     </button>
                     <button
-                      className="text-sm text-slate-400 hover:underline"
+                      className="text-sm text-[var(--color-text-muted)] hover:underline"
                       onClick={() => setEditingId(null)}
                     >
                       cancel
@@ -213,9 +218,9 @@ export default function ProfileFactsPage() {
                   </>
                 ) : (
                   <>
-                    <span className="flex-1 text-sm text-slate-300">{String(fact.value)}</span>
+                    <span className="flex-1 text-sm text-[var(--color-text-secondary)]">{String(fact.value)}</span>
                     <button
-                      className="text-sm text-sky-400 hover:underline"
+                      className="text-sm text-[var(--color-accent)] hover:underline"
                       onClick={() => {
                         setEditingId(fact.id)
                         setEditValue(String(fact.value))
@@ -224,7 +229,7 @@ export default function ProfileFactsPage() {
                       edit
                     </button>
                     <button
-                      className="text-sm text-rose-400 hover:underline"
+                      className="text-sm text-red-500 hover:underline"
                       onClick={() => handleDelete(fact)}
                     >
                       delete

@@ -5,7 +5,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "options": {
         "baseURL": "http://localhost:20128/v1",
-        "apiKey": "sk-08f5549dffdfc510-klx4wl-7945d0ac"
+        "apiKey": "sk-3adf232c30527a79-nq40y6-e14c3dd2"
       },
       "models": {
         "oc/big-pickle": {

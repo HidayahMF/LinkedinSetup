@@ -254,4 +254,4 @@ test only (see below).
 3. No approval bypass helpers (`execute`, `forceExecute`, `bypassApproval`,
    etc.) — guarded by automated tests in `tests/security/`.
 4. Do not reintroduce header-based identity (`x-user-id`); identity comes only
-   from verified sessions.
+   from verified session.
